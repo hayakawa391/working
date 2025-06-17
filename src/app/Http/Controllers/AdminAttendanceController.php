@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use App\Models\Attendance;
+use App\Models\AttendanceRequest;
 use App\Models\User;
 
 class AdminAttendanceController extends Controller
@@ -23,20 +24,6 @@ class AdminAttendanceController extends Controller
     return view('admin.attendance.requests', compact('requests'));
 }
 
-public function approveRequest($id)
-{
-    $request = AttendanceEditRequest::findOrFail($id);
-    $attendance = $request->attendance;
-
-    $attendance->update([
-        'clock_in' => $request->new_clock_in,
-        'clock_out' => $request->new_clock_out,
-    ]);
-
-    $request->update(['status' => 'approved']);
-
-    return back()->with('success', '変更申請を承認しました。');
-}
 
 public function rejectRequest($id)
 {
@@ -165,6 +152,15 @@ public function exportMonthlyAttendance($userId)
         "Content-Type" => "text/csv",
         "Content-Disposition" => "attachment; filename={$fileName}",
     ]);
+}
+
+public function requests()
+{
+    // 承認待ちの勤怠修正申請を取得（関連ユーザーと勤怠も含める）
+    $pendingRequests = AttendanceRequest::where('status', 'pending')->with(['user', 'attendance'])->get();
+
+    // Bladeビューへ渡す
+    return view('admin.requests.pending', compact('pendingRequests'));
 }
 
 

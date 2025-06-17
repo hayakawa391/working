@@ -30,14 +30,12 @@ use App\Http\Controllers\UserController;
 
 
 
-
+//Fortify によってログイン画面は /login にある
+Route::get('/', fn () => redirect('/login'));
 
 
 
 // ↓ログイン後は常に/attendanceへという仕様にする（管理者用は別で用意するのがよい）
-// Route::middleware(['auth'])->get('/dashboard', function () {
-//     return redirect()->route('attendance.index'); // ログイン後は常に /attendance へ
-// })->name('dashboard');
 
 //ログインのためにユーザー一覧のルートを追加する
 Route::get('/users', [UserAuthController::class, 'user_index']) -> name('user.index');
@@ -47,19 +45,19 @@ Route::get('/login', [UserAuthController::class, 'showLoginForm'])->name('login'
 Route::post('/login', [UserAuthController::class, 'login']);
 
 
-// 一般ユーザー用のルート
-Route::middleware('auth')->group(function () {
-   Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('attendance.index')
-        : redirect()->route('login');
-});
 
+Route::middleware('auth')->group(function(){
+    //auth ミドルウェアを適用したルートグループを作成しています。
+    //auth ミドルウェアは、ユーザーが認証されているかどうかを確認するための仕組み。
+    //このグループ内のすべてのルートは、認証されていない場合アクセスできない。
 
+    //Laravelでは、ログインに成功すると「ログイン後にどこにリダイレクトするか？」が自動的に /dashboard に設定されているケースが多いです（特に Fortify, Breeze, Jetstream などの認証パッケージを使っている場合）
+    //ユーザーがログイン成功 → /dashboard に自動リダイレクト
+    //dashboard → /attendance に即座にリダイレクト
+    //結果的に、ユーザーは /attendance（= 勤怠画面）にたどりつく
     Route::get('/dashboard', fn () => redirect()->route('attendance.index'))->name('dashboard');
 
 
-   
     Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clock-in');
     Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('attendance.clock-out');
@@ -68,7 +66,7 @@ Route::middleware('auth')->group(function () {
 
     //出退勤と休憩の一覧を見るためのルート
     Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
-     Route::post('attendance/request-edit/{id}', [AttendanceController::class, 'editAttendanceEditRequests'])->name('attendance.edit-requests');
+     Route::post('attendance/request-edit/{id}', [AttendanceController::class, 'requestEdit'])->name('attendance.edit-requests');
 
      //月次勤怠ページの表示
      Route::get('/attendance/monthly', [AttendanceController::class, 'monthly'])->name('admin.attendance.monthly');
@@ -116,6 +114,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/attendance', [AdminAttendanceController::class, 'index'])->name('attendance.index');
 
     // 承認関連
+ //このコードは次のような動作を定義しています：
+//ユーザーが http://your-domain.com/attendance/requests にアクセスすると、このルートが処理されます。
+// このリクエストは AdminAttendanceController クラスの requests メソッドに渡されます。
+// このルートには 'admin.attendance.requests' という名前が付けられているため、アプリケーション内で簡単に参照できます。
+
+    Route::get('/attendance/requests', [AdminAttendanceController::class, 'requests'])
+    ->name('attendance.requests');
+
+
+
   Route::get('/attendance/working-hour-requests', [AdminAttendanceController::class, 'editWorkingHourRequests'])->name('attendance.working-hour-requests');
     Route::get('/attendance/requests/approved', [AdminAttendanceController::class, 'approvedRequests'])->name('attendance.requests.approved');
     Route::get('/attendance/request/{id}', [AdminAttendanceController::class, 'requestDetail'])->name('attendance.request.detail');

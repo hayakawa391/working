@@ -43,5 +43,10 @@
             @endforeach
         </tbody>
     </table>
+
+<!-- 勤怠画面へ戻る -->
+<div class="mt-4">
+    <a href="{{ route('attendance.index') }}" class="btn btn-secondary">出勤画面へ戻る</a>
 </div>
+
 @endsection

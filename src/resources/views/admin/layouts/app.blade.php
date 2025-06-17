@@ -67,7 +67,7 @@
             <a href="{{ route('admin.attendance.monthly') }}">勤怠一覧</a>
           </li>
           <li class="header-nav__item">
-            <a href="{{ route('admin.users.index') }}">ユーザー一覧</a>
+            <a href="{{ route('admin.users.index') }}">スタッフ一覧</a>
           </li>
           <li class="header-nav__item">
             <a href="{{ route('admin.attendance.requests') }}">申請一覧</a>

@@ -57,32 +57,42 @@
 
 <body>
   <header class="header">
-    <div class="header__inner">
-      <a class="header__logo" href="/">COACHTECH</a>
+  <div class="header__inner">
+    <a class="header__logo" href="/">COACHTECH</a>
 
-      @auth
-      <nav>
-        <ul class="header-nav">
-          <li class="header-nav__item">
-            <a href="{{ route('admin.attendance.monthly') }}">勤怠一覧</a>
-          </li>
-          <li class="header-nav__item">
-            <a href="{{ route('admin.users.index') }}">ユーザー一覧</a>
-          </li>
-          <li class="header-nav__item">
-            <a href="{{ route('admin.attendance.requests') }}">申請一覧</a>
-          </li>
-          <li class="header-nav__item">
-            <form method="POST" action="{{ route('logout') }}">
-              @csrf
-              <button type="submit">ログアウト</button>
-            </form>
-          </li>
-        </ul>
-      </nav>
-      @endauth
-    </div>
-  </header>
+    @auth
+    <nav>
+  <!-- ヘッダーのボタン -->
+      <ul class="header-nav">
+  <!-- 現在ログインしているユーザーが管理者（is_adminプロパティがtrue）かどうかをチェック
+    管理者だった場合、「承認申請一覧」というリンクが表示され、クリックするとadmin.attendance.requestsという名前のルートに遷移します-->
+    @if(auth()->user()->is_admin && Route::has('admin.attendance.requests'))
+        <li class="header-nav__item">
+            <a href="{{ route('admin.attendance.requests') }}">承認申請一覧</a>
+        </li>
+    @endif
+
+    <li class="header-nav__item">
+        <a href="{{ route('attendance.index') }}">勤怠管理</a>  {{-- index.blade.php --}}
+    </li>
+
+    <li class="header-nav__item">
+        <a href="{{ route('admin.attendance.monthly') }}">勤怠一覧</a> {{-- monthly.blade.php --}}
+    </li>
+
+    <li class="header-nav__item">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit">ログアウト</button>
+        </form>
+    </li>
+</ul>
+
+    </nav>
+    @endauth
+  </div>
+</header>
+
 
   <main>
     @yield('content')
